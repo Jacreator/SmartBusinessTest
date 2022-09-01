@@ -108,4 +108,6 @@ return [
 
     'password_timeout' => 10800,
 
+    'token' => env('AUTH_TOKEN', 'qwertyuiasdfghjkxcvbnm,dfghjkl;'),
+
 ];
