@@ -29,6 +29,7 @@ class StoreProductRequest extends FormRequest
             'price' => 'required|numeric',
             'image' => 'required|image',
             'quantity' => 'required|numeric|min:1',
+            'user_id' => 'required|numeric',
         ];
     }
 
@@ -44,6 +45,11 @@ class StoreProductRequest extends FormRequest
             'description.required' => 'Description is required',
             'price.required' => 'Price is required',
             'image.required' => 'Image is required',
+            'quantity.required' => 'Quantity is required',
+            'quantity.min' => 'Quantity must be at least 1',
+            'image.image' => 'Image is invalid',
+            'user_id.required' => 'User is required',
+            'user_id.numeric' => 'User is invalid',
         ];
     }
 }

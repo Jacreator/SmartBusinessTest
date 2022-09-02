@@ -10,6 +10,12 @@ use App\Http\Requests\RegistrationRequest;
 
 class AuthController extends Controller
 {
+    /**
+     * Register a new user
+     *
+     * @param  \App\Http\Requests\RegistrationRequest  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function register(RegistrationRequest $request)
     {
         $user = User::create($this->userDataToStore($request->validated()));
@@ -20,8 +26,16 @@ class AuthController extends Controller
             'message' => 'User created successfully',
             'user' => $user,
             'token' => $token
-        ], 201);    }
+        ], 201);
+    }
 
+    /**
+     * Login User 
+     * 
+     * @param \App\Http\Requests\LoginRequest  $request
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function login(LoginRequest $request)
     {
         // Check email
@@ -43,13 +57,19 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function logout(Request $request)
+    /**
+     * Logout user (Revoke the token)
+     *
+     * @param array $data
+     * @return array
+     */
+    public function logout()
     {
         auth()->user()->tokens()->delete();
 
-        return [
-            'message' => 'Logged out'
-        ];
+        return response()->json([
+            'message' => 'User logged out successfully'
+        ], 200);
     }
 
     /**
