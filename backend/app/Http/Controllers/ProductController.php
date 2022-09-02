@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Support\Str;
+use App\services\ProductService;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 
 class ProductController extends Controller
 {
+    private $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -16,11 +24,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::paginate(config('app.pagination.per_page'));
-
         return response()->json([
             'message' => 'Products retrieved successfully',
-            'products' => $products
+            'products' => $this->productService->getAllProducts()
         ], 200);
     }
 
@@ -33,18 +39,15 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         // store image
-        $request->file('image')
-        ->storePubliclyAs('image/products', $request->file('image')
-        ->getClientOriginalName(), 'public');
+        $imagePath = uploadFile($request);
 
-        $data = $request->validated();
-        $data['image'] = $request->file('image')->getClientOriginalName();
-
-        $product = Product::create($this->productDataToStore($data));
+        // complete store payload
+        $payload = $request->validated();
+        $payload['image'] = $imagePath;
 
         return response()->json([
             'message' => 'Product created successfully',
-            'product' => $product
+            'product' => $this->productService->create($this->productDataToStore($payload))
         ], 201);
     }
 
@@ -71,22 +74,17 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        chmod(public_path($product->image), 0777);
         // unlink old imageDir
-        unlink(public_path('images/' . $product->image));
-
+        removeFile($product->image);
         // store image
-        $request->file('image')
-        ->storePubliclyAs('image/products', $request->file('image')
-        ->getClientOriginalName(), 'public');
-        $data = $request->validated();
-        $data['image'] = $request->file('image')->getClientOriginalName();
+        $imagePath = uploadFile($product);
 
-        $product->update($this->productDataToStore($data));
+        $data = $request->validated();
+        $data['image'] = $imagePath;
 
         return response()->json([
             'message' => 'Product updated successfully',
-            'product' => $product
+            'product' => $this->productService->update($product)
         ], 200);
     }
 
@@ -98,11 +96,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        chmod(public_path('images/' . $product->image), 0777);
-
-        // unlink old imageDir
-        unlink(public_path($product->image));
-        $product->delete();
+        removeFile($product->image) ? $product->delete() : null;
 
         return response()->json([
             'message' => 'Product deleted successfully',
@@ -118,17 +112,9 @@ class ProductController extends Controller
      */
     public function search($slug)
     {
-        $product = Product::where('slug', $slug)->first();
-
-        if (!$product) {
-            return response()->json([
-                'message' => 'Product not found'
-            ], 404);
-        }
-
         return response()->json([
             'message' => 'Product found successfully',
-            'product' => $product
+            'product' => $this->productService->search($slug)
         ], 200);
     }
 
@@ -148,7 +134,7 @@ class ProductController extends Controller
             'image' => $data['image'],
             'quantity' => $data['quantity'],
             'user_id' => $data['user_id'] ?? auth()->id(),
-            'slug' => Str::slug($data['name']),
+            'slug' => Str::slug($data['name'] . '-' . time())
         ];
     }
 }
