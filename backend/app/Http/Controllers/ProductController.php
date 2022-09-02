@@ -34,11 +34,11 @@ class ProductController extends Controller
     {
         // store image
         $request->file('image')
-        ->storePubliclyAs('image/products', $request->file('avatar')
+        ->storePubliclyAs('image/products', $request->file('image')
         ->getClientOriginalName(), 'public');
 
         $data = $request->validated();
-        $data['image'] = $request->file('avatar')->getClientOriginalName();
+        $data['image'] = $request->file('image')->getClientOriginalName();
 
         $product = Product::create($this->productDataToStore($data));
 
@@ -76,11 +76,11 @@ class ProductController extends Controller
         unlink(public_path('images/' . $product->image));
 
         // store image
-        $image = $request->file('image');
-        $image_name = time() . '.' . $image->getClientOriginalExtension();
-        $image->move(public_path('images'), $image_name);
+        $request->file('image')
+        ->storePubliclyAs('image/products', $request->file('image')
+        ->getClientOriginalName(), 'public');
         $data = $request->validated();
-        $data['image'] = 'images/' . $image_name;
+        $data['image'] = $request->file('image')->getClientOriginalName();
 
         $product->update($this->productDataToStore($data));
 
