@@ -11,8 +11,15 @@ use App\Http\Requests\UpdateProductRequest;
 
 class ProductController extends Controller
 {
-    private $productService;
+    public $productService;
 
+    /**
+     * Create a new controller instance.
+     *
+     * @param ProductService $productService 
+     * 
+     * @return void
+     */
     public function __construct(ProductService $productService)
     {
         $this->productService = $productService;
@@ -24,16 +31,20 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return response()->json([
-            'message' => 'Products retrieved successfully',
-            'products' => $this->productService->getAllProducts()
-        ], 200);
+        return response()->json(
+            [
+                'message' => 'Products retrieved successfully',
+                'products' => $this->productService->getAllProducts()
+            ],
+            200
+        );
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request 
+     * 
      * @return \Illuminate\Http\Response
      */
     public function store(StoreProductRequest $request)
@@ -45,31 +56,41 @@ class ProductController extends Controller
         $payload = $request->validated();
         $payload['image'] = $imagePath;
 
-        return response()->json([
-            'message' => 'Product created successfully',
-            'product' => $this->productService->create($this->productDataToStore($payload))
-        ], 201);
+        return response()->json(
+            [
+                'message' => 'Product created successfully',
+                'product' => $this->productService->create(
+                    $this->_productDataToStore($payload)
+                )
+            ],
+            201
+        );
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param Product $product 
+     * 
      * @return \Illuminate\Http\Response
      */
     public function show(Product $product)
     {
-        return response()->json([
-            'message' => 'Product found successfully',
-            'product' => $product
-        ], 200);
+        return response()->json(
+            [
+                'message' => 'Product found successfully',
+                'product' => $product
+            ],
+            200
+        );
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param UpdateProductRequest $request 
+     * @param Product              $product 
+     * 
      * @return \Illuminate\Http\Response
      */
     public function update(UpdateProductRequest $request, Product $product)
@@ -82,49 +103,61 @@ class ProductController extends Controller
         $data = $request->validated();
         $data['image'] = $imagePath;
 
-        return response()->json([
-            'message' => 'Product updated successfully',
-            'product' => $this->productService->update($product)
-        ], 200);
+        return response()->json(
+            [
+                'message' => 'Product updated successfully',
+                'product' => $this->productService->update($product)
+            ],
+            200
+        );
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param Product $product 
+     * 
      * @return \Illuminate\Http\Response
      */
     public function destroy(Product $product)
     {
         removeFile($product->image) ? $product->delete() : null;
 
-        return response()->json([
-            'message' => 'Product deleted successfully',
-            'product' => $product
-        ], 200);
+        return response()->json(
+            [
+                'message' => 'Product deleted successfully',
+                'product' => $product
+            ],
+            200
+        );
     }
 
     /**
      * Search for a product by its slug
      *
-     * @param  str  $name
+     * @param str $slug 
+     * 
      * @return \Illuminate\Http\Response
      */
     public function search($slug)
     {
-        return response()->json([
-            'message' => 'Product found successfully',
-            'product' => $this->productService->search($slug)
-        ], 200);
+        return response()->json(
+            [
+                'message' => 'Product found successfully',
+                'product' => $this->productService->search($slug)
+            ],
+            200
+        );
     }
 
     /**
      * Get product data to store
      *
-     * @param  array  $data
+     * @param array $data 
+     * 
      * @return array
      */
-    private function productDataToStore(array $data)
+    private function _productDataToStore(array $data)
     {
         return [
             'name' => $data['name'],

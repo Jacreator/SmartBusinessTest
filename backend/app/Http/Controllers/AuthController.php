@@ -13,26 +13,30 @@ class AuthController extends Controller
     /**
      * Register a new user
      *
-     * @param  \App\Http\Requests\RegistrationRequest  $request
+     * @param \App\Http\Requests\RegistrationRequest $request 
+     * 
      * @return \Illuminate\Http\JsonResponse
      */
     public function register(RegistrationRequest $request)
     {
-        $user = User::create($this->userDataToStore($request->validated()));
+        $user = User::create($this->_userDataToStore($request->validated()));
 
         $token = $user->createToken(config('auth.token'))->plainTextToken;
 
-        return response()->json([
-            'message' => 'User created successfully',
-            'user' => $user,
-            'token' => $token
-        ], 201);
+        return response()->json(
+            [
+                'message' => 'User created successfully',
+                'user' => $user,
+                'token' => $token
+            ],
+            201
+        );
     }
 
     /**
      * Login User 
      * 
-     * @param \App\Http\Requests\LoginRequest  $request
+     * @param \App\Http\Requests\LoginRequest $request 
      * 
      * @return \Illuminate\Http\JsonResponse
      */
@@ -43,40 +47,51 @@ class AuthController extends Controller
 
         // Check password
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'Invalid credentials'
-            ], 401);
+            return response()->json(
+                [
+                    'message' => 'Invalid credentials'
+                ],
+                401
+            );
         }
 
         $token = $user->createToken(config('auth.token'))->plainTextToken;
 
-        return response()->json([
-            'message' => 'User logged in successfully',
-            'user' => $user,
-            'token' => $token
-        ], 200);
+        return response()->json(
+            [
+                'message' => 'User logged in successfully',
+                'user' => $user,
+                'token' => $token
+            ],
+            200
+        );
     }
 
     /**
      * Logout user (Revoke the token)
-     *
-     * @param array $data
+     * 
      * @return array
      */
     public function logout()
     {
         auth()->user()->tokens()->delete();
 
-        return response()->json([
-            'message' => 'User logged out successfully'
-        ], 200);
+        return response()->json(
+            [
+                'message' => 'User logged out successfully'
+            ],
+            200
+        );
     }
 
     /**
-     * @param array $data
+     * Get the authenticated User
+     * 
+     * @param array $data 
+     * 
      * @return array
      */
-    private function userDataToStore(array $data): array
+    private function _userDataToStore(array $data): array
     {
         return [
             'name' => $data['name'],
